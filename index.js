@@ -1,13 +1,18 @@
-// ./src/index.js
+const webpackDevMiddleware = require('webpack-dev-middleware')
+const webpackHotMiddleware = require('webpack-hot-middleware')
 const express = require('express')
-const config = require('./webpack.config.server')
+const serverConfig = require('./webpack.config.server')
+const clientConfig = require('./webpack.config.client')
 const webpack = require('webpack')
 
 const app = express()
 const queue = []
 let latestMiddleware
 
-webpack(config).watch(
+const clientCompiler = webpack(clientConfig)
+const serverCompiler = webpack(serverConfig)
+
+serverCompiler.watch(
     {
         aggregateTimeout: 300,
         poll: undefined,
@@ -22,8 +27,16 @@ webpack(config).watch(
     },
 )
 
+app.use(
+    webpackDevMiddleware(clientCompiler, {
+        noInfo: false,
+        publicPath: '/',
+    }),
+)
+
+app.use(webpackHotMiddleware(clientCompiler))
+
 app.use((req, res, next) => {
-    console.log('handling request')
     if (latestMiddleware) {
         latestMiddleware(req, res, next)
         return

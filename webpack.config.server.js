@@ -2,6 +2,7 @@ const path = require('path')
 const nodeExternals = require('webpack-node-externals')
 
 module.exports = {
+    mode: 'development',
     entry: ['./src/server/middleware'],
     target: 'node',
     externals: [nodeExternals()],
@@ -9,8 +10,22 @@ module.exports = {
         rules: [
             {
                 test: /\.js?$/,
-                use: 'babel-loader',
                 exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: [
+                            [
+                                'env',
+                                {
+                                    targets: {
+                                        node: '10.1',
+                                    },
+                                },
+                            ],
+                        ],
+                    },
+                },
             },
         ],
     },
